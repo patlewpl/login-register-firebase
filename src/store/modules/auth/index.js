@@ -6,7 +6,7 @@ import {
 } from "firebase/auth";
 
 import { auth } from "../../../firebase/index.js";
-import { getDatabase, ref, set, onValue } from "firebase/database";
+import { getDatabase, ref, set } from "firebase/database";
 
 import router from "../../../router/index.js";
 
@@ -67,8 +67,10 @@ export default {
 
           sessionStorage.setItem("uid", context.getters.uid);
           sessionStorage.setItem("email", context.getters.email);
-          sessionStorage.setItem("displayName", context.getters.displayName);
-          sessionStorage.setItem("photoURL", context.getters.photoURL);
+          sessionStorage.setItem("photoURL", "/src/assets/user.png");
+          sessionStorage.setItem("displayName", "not set");
+          sessionStorage.setItem("weight", "not set");
+          sessionStorage.setItem("height", "not set");
 
           context.dispatch("writeUserData");
           router.replace("/login");
@@ -83,24 +85,18 @@ export default {
       const db = getDatabase();
       const uid = sessionStorage.getItem("uid");
       const email = sessionStorage.getItem("email");
-      const name = sessionStorage.getItem("displayName");
       const photoURL = sessionStorage.getItem("photoURL");
+      const name = sessionStorage.getItem("displayName");
+      const weight = sessionStorage.getItem("weight");
+      const height = sessionStorage.getItem("height");
 
       set(ref(db, "users/" + uid), {
         email: email,
         user_photo: photoURL,
         name: name,
-        weight: 0,
-        height: 0,
+        weight: weight,
+        height: height,
         permission: "user",
-      });
-    },
-    readUserData() {
-      const db = getDatabase();
-      const starCountRef = ref(db, "posts/" + postId + "/starCount");
-      onValue(starCountRef, (snapshot) => {
-        const data = snapshot.val();
-        updateStarCount(postElement, data);
       });
     },
     login(context, payload) {

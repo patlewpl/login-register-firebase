@@ -3,27 +3,29 @@
     <h1>User Profile</h1>
     <div class="user">
       <div class="user-avatar">
-        <img src="../assets/user.png" alt="User Avatar" width="115" />
+        <img :src="this.userData.user_photo" alt="User Avatar" width="115" />
       </div>
       <div class="user-details">
         <div class="account-info">
           <p>
-            E-mail: <span>{{ email }}</span>
+            E-mail: <span>{{ this.userData.email }}</span>
           </p>
-          <p>Password: <span>********</span></p>
+          <p>
+            Password: <span>{{ this.userData.password }}</span>
+          </p>
           <span class="btn">Change password</span>
         </div>
-        <!-- <div class="user-info">
+        <div class="user-info">
           <p>
-            Name: <span>{{ displayName }}</span>
+            Name: <span>{{ this.userData.name }}</span>
           </p>
           <p>
-            Weight: <span>{{ weight }}</span>
+            Weight: <span>{{ this.userData.weight }}</span>
           </p>
           <p>
-            Height: <span> {{ height }}</span>
+            Height: <span> {{ this.userData.height }}</span>
           </p>
-        </div> -->
+        </div>
       </div>
     </div>
     <!-- <form @submit.prevent="submitForm">
@@ -33,49 +35,39 @@
 </template>
 
 <script>
-import { auth } from "../firebase/index.js";
-import { ref, computed, onBeforeMount, onMounted, reactive } from "vue";
-import { useStore } from "vuex";
-// wyciagnac dane z db
+import { getDatabase, ref, onValue } from "firebase/database";
+
 export default {
-  setup() {
-    const store = useStore();
-    const email = sessionStorage.getItem("email");
+  data() {
     return {
-      email,
+      userData: {},
     };
   },
+  methods: {
+    setUserData() {
+      const db = getDatabase();
+      const uid = localStorage.getItem("UserId");
+      console.log(uid);
+      const user = ref(db, "users/" + uid);
+      console.log(user);
+      onValue(user, (data) => {
+        const userDataDb = {
+          email: (data.val() && data.val().email) || "Load data failed.",
+          password: "*******",
+          user_photo:
+            (data.val() && data.val().user_photo) || "/src/assets/user.png",
+          name: (data.val() && data.val().name) || "Load data failed.",
+          weight: (data.val() && data.val().weight) || "Load data failed.",
+          height: (data.val() && data.val().height) || "Load data failed.",
+        };
 
-  // props: ["email"],
-  // setup() {
-  //
-  // const email = store.state.email;
-  // function show() {
-  //   console.log(email);
-  // }
-  // onBeforeMount(() => {
-  //   show();
-  // });
-  // console.log(email.value);
-  // const email = computed(() => store.state.email);
-  // function submitForm() {
-  // console.log(user);
-  // console.log(auth.currentUser);
-  //   uid: null,
-  //   email: null,
-  //   displayName: null,
-  //   photoURL: null,
-  //   weight: null,
-  //   height: null,
-  // }
-  // onMounted(() => {
-  //   store.dispatch("setUserInfo");
-  // });
-  // return {
-  // submitForm,
-  // email,
-  // };
-  // },
+        this.userData = userDataDb;
+      });
+    },
+  },
+  created() {
+    this.setUserData();
+  },
 };
 </script>
 <style scoped>
